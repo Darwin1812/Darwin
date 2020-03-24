@@ -20,30 +20,37 @@
   unsigned long tiempo_8va_hora = 285000;
   unsigned long tiempo_salir = 315000;
    
-
-
-   
+//fUNCION SETUP
 void setup() {
   Serial.begin(9600);
   pinMode (3, OUTPUT);
   setTime(07,04,37,14,02,2020);
  
 } 
+
+//FUNCION PRINTTIME PARA LIBERAR LA FUNCION LOOP
+void printTime(time_t t){
+   Serial.print(day(t));
+   Serial.print(+ "/") ;
+   Serial.print(month(t));
+   Serial.print(+ "/") ;
+   Serial.print(year(t)); 
+   Serial.print( " ") ;
+   Serial.print(hour(t));  
+   Serial.print(+ ":") ;
+   Serial.print(minute(t));
+   Serial.print(":") ;
+   Serial.println(second(t));
+   delay(1000);
+}
+
+
+//FUNCION LOOP PARTE PRINCIPAL DE TU CODIGO.
+
  void loop() {
   time_t t = now();
 
-    Serial.print(day(t));
-    Serial.print(+ "/") ;
-    Serial.print(month(t));
-    Serial.print(+ "/") ;
-    Serial.print(year(t)); 
-    Serial.print( " ") ;
-    Serial.print(hour(t));  
-    Serial.print(+ ":") ;
-    Serial.print(minute(t));
-    Serial.print(":") ;
-    Serial.println(second(t));
-    delay(1000);
+   printTime(t);
     
   Serial.print ("dia: ");
   Serial.println (contador_dia); 
