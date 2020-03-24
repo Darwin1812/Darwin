@@ -3,6 +3,7 @@
 
 int contador_dia = 0;
 int dias_apagado[4] = {1, 2, 3, 9};
+int dias_apagado_array_length = 4;
 int timbre = 3;
 unsigned long tiempo = 0;
 int tiempo_inicio = millis();
@@ -55,8 +56,9 @@ void loop()
    time_t t = now();
    printTime(t);
 
-      for (int i = 0; i < dias_apagado; i++)
+   for (int i = 0; i < dias_apagado_array_length; i++)
    {
+
       if (contador_dia == dias_apagado[i])
       {
          Serial.print("timbre apagado: ");
