@@ -17,6 +17,9 @@ int DELAY_LOW_RECREO1 = 15000;
 int DELAY_LOW_SEXTA_HORA = 20000;
 int DELAY_LOW_RECREO2 = 35000;
 
+//Deberias tener un delay para un dia completo apagado
+int DELAY_ALL_DAY = 250000;
+
 //tiempo de las horas de clases
 unsigned long tiempo_1ra_hora = 20000;
 unsigned long tiempo_2da_hora = 50000;
@@ -87,7 +90,7 @@ void timbreEntreHoras(int pin, int tiempo)
    delay(1000);
 }
 
-//CICLO DE TIEMBRE NORMAL
+//TIEMBRE POR HORAS
 
 void timbreNormal(int message, int pin, int tiempo_hora, int delay_print, int delay_low)
 {
@@ -135,6 +138,47 @@ void timpoSalida(int message, int pin, int tiempo_hora, int delay_print, int del
    }
 }
 
+//CICLO DE UN DIA COMPLETO
+void diaCompleto(int i)
+{
+   /*** CICLO TIMBRE NORMAL DIA DE CLASES ****/
+
+   //TIMBRE PRIMERA HORA
+   timbreNormal("1ra hora : ", timbre, tiempo_1ra_hora, DELAY_PRINT, DELAY_LOW);
+
+   //TIMBRE SEGUNDA HORA
+   timbreNormal("2da hora : ", timbre, tiempo_2da_hora, DELAY_PRINT, DELAY_LOW);
+
+   //TIMBRE TERCERA HORA
+   timbreNormal("3ra hora : ", timbre, tiempo_3ra_hora, DELAY_PRINT, DELAY_LOW);
+
+   //RECREO 1
+   timbreNormal("Recreo 1:  ", timbre, recreo_1, DELAY_PRINT, DELAY_LOW_RECREO1);
+
+   //TIMBRE CUARTA HORA
+   timbreNormal("4ra hora : ", timbre, tiempo_4ta_hora, DELAY_PRINT, DELAY_LOW);
+
+   //TIMBRE QUINTA HORA
+   timbreNormal("5ta hora : ", timbre, tiempo_5ta_hora, DELAY_PRINT, DELAY_LOW);
+
+   //TIMBRE SEXTA HORA
+   timbreNormal("6ta hora : ", timbre, tiempo_6ta_hora, DELAY_PRINT, DELAY_LOW_SEXTA_HORA);
+
+   //TIMBRE RECREO 2
+   timbreNormal("Recreo 2 : ", timbre, recreo_2, DELAY_PRINT, DELAY_LOW_RECREO2);
+
+   //TIMBRE SEPTIMA HORA
+   timbreNormal("7ma hora : ", timbre, tiempo_7ma_hora, DELAY_PRINT, DELAY_LOW);
+
+   //TIMBRE OCTAVA HORA
+   timbreNormal("8va hora : ", timbre, tiempo_8va_hora, DELAY_PRINT, DELAY_LOW);
+
+   // TIEMPO SALIDA, i LLEVA EL CONTEO DE LOS DIAS Y
+   //SE INCREMENTA EN EL FOR
+
+   tiempoSalida("Tiempo Salida : ", timbre, tiempo_salir, DELAY_PRINT, DELAY_LOW, i);
+}
+
 //FUNCION LOOP PARTE PRINCIPAL DEL CODIGO.
 
 void loop()
@@ -168,49 +212,16 @@ void loop()
       if (dias_apagados_count >= 0 && i == dias_apagado[i])
       {
          //NOTA: deberia apagar por todo el dia! revisar logica
-         timbreApagado("Timbre apagado:", timbre, DELAY_PRINT, DELAY_LOW);
+         //Cambiar el valor de DELAY_ALL_DAY al incio
+         timbreApagado("Timbre apagado:", timbre, DELAY_PRINT, DELAY_ALL_DAY);
+
+         // voy reduciendo el indice del arreglo de 3 a -1
          --dias_apagados_count;
       }
       else
       {
-
-         /*** CICLO TIMBRE NORMAL ****/
-
-         //TIMBRE PRIMERA HORA
-         timbreNormal("1ra hora : ", timbre, tiempo_1ra_hora, DELAY_PRINT, DELAY_LOW);
-
-         //TIMBRE SEGUNDA HORA
-         timbreNormal("2da hora : ", timbre, tiempo_2da_hora, DELAY_PRINT, DELAY_LOW);
-
-         //TIMBRE TERCERA HORA
-         timbreNormal("3ra hora : ", timbre, tiempo_3ra_hora, DELAY_PRINT, DELAY_LOW);
-
-         //RECREO 1
-         timbreNormal("Recreo 1:  ", timbre, recreo_1, DELAY_PRINT, DELAY_LOW_RECREO1);
-
-         //TIMBRE CUARTA HORA
-         timbreNormal("4ra hora : ", timbre, tiempo_4ta_hora, DELAY_PRINT, DELAY_LOW);
-
-         //TIMBRE QUINTA HORA
-         timbreNormal("5ta hora : ", timbre, tiempo_5ta_hora, DELAY_PRINT, DELAY_LOW);
-
-         //TIMBRE SEXTA HORA
-         timbreNormal("6ta hora : ", timbre, tiempo_6ta_hora, DELAY_PRINT, DELAY_LOW_SEXTA_HORA);
-
-         //TIMBRE RECREO 2
-         timbreNormal("Recreo 2 : ", timbre, recreo_2, DELAY_PRINT, DELAY_LOW_RECREO2);
-
-         //TIMBRE SEPTIMA HORA
-         timbreNormal("7ma hora : ", timbre, tiempo_7ma_hora, DELAY_PRINT, DELAY_LOW);
-
-         //TIMBRE OCTAVA HORA
-         timbreNormal("8va hora : ", timbre, tiempo_8va_hora, DELAY_PRINT, DELAY_LOW);
-
-         // TIEMPO SALIDA, i LLEVA EL CONTEO DE LOS DIAS Y
-         //SE INCREMENTA EN EL FOR
-
-         tiempoSalida("Tiempo Salida : ", timbre, tiempo_salir, DELAY_PRINT, DELAY_LOW, i);
-
+         /*DIA COMPLETO DE TRABAJO i REPRESENTA EL DIA EN CUESTION*/
+         diaCompleto(i);
       } //FINALIZO EL IF - ELSE
 
    } //FINALIZO EL FOR POR DIAS
