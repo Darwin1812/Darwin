@@ -208,7 +208,7 @@ void loop()
       // dias_apagados_count es un indice
       // para dias apagados por esto el sentido inverso
 
-      if (dias_apagados_count >= 0 && i == dias_apagado[i])
+      if (dias_apagados_count >= 0 && i == dias_apagado[dias_apagados_count])
       {
          //NOTA: deberia apagar por todo el dia! revisar logica
          //Cambiar el valor de DELAY_ALL_DAY al incio
