@@ -42,8 +42,9 @@ void setup()
 }
 
 //FUNCION PRINTTIME PARA LIBERAR LA FUNCION LOOP
-void printTime(time_t t, int contador_dia)
+void printTime(int contador_dia)
 {
+   time_t t = now();
    Serial.print(day(t));
    Serial.print(+"/");
    Serial.print(month(t));
@@ -202,8 +203,8 @@ void loop()
 
    for (int i = 0; i < DIAS_YEAR; i++)
    {
-      time_t t = now();
-      printTime(t, i);
+
+      printTime(i);
       // cada vez que se cumpla la condicion se reduce el indice
       // dias_apagados_count es un indice
       // para dias apagados por esto el sentido inverso
