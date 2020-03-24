@@ -37,7 +37,7 @@ unsigned long tiempo_salir = 315000;
 void setup()
 {
    Serial.begin(9600);
-   pinMode(3, OUTPUT);
+   pinMode(timbre, OUTPUT);
    setTime(07, 04, 37, 14, 02, 2020);
 }
 
