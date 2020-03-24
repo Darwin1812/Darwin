@@ -1,22 +1,31 @@
 #include <Time.h>
 #include <TimeLib.h>
 
-int contador_dia = 0;
-int dias_apagado[4] = {1, 2, 3, 9};
+//dias apagado esta colocado en orden inverso
+int dias_apagado[4] = {9, 3, 2, 1};
+
 int dias_apagado_array_length = 4;
+int DIAS_YEAR = 365;
 int timbre = 3;
 unsigned long tiempo = 0;
 int tiempo_inicio = millis();
 
+//Se repiten mucho pueden ser constantes
+int DELAY_PRINT = 5000;
+int DELAY_LOW = 25000;
+int DELAY_LOW_RECREO1 = 15000;
+int DELAY_LOW_SEXTA_HORA = 20000;
+int DELAY_LOW_RECREO2 = 35000;
+
 //tiempo de las horas de clases
 unsigned long tiempo_1ra_hora = 20000;
 unsigned long tiempo_2da_hora = 50000;
-unsigned long tiempo_era_hora = 80000;
+unsigned long tiempo_3ra_hora = 80000;
 unsigned long recreo_1 = 110000;
 unsigned long tiempo_4ta_hora = 130000;
 unsigned long tiempo_5ta_hora = 160000;
 unsigned long tiempo_6ta_hora = 190000;
-unsigned long recreo2 = 215000;
+unsigned long recreo_2 = 215000;
 unsigned long tiempo_7ma_hora = 255000;
 unsigned long tiempo_8va_hora = 285000;
 unsigned long tiempo_salir = 315000;
@@ -49,306 +58,160 @@ void printTime(time_t t)
    Serial.println(contador_dia);
 }
 
-//FUNCION LOOP PARTE PRINCIPAL DE TU CODIGO.
+//FUNCION TIMBRE APAGADO
+void timbreApagado(int message, int pin, int delay_print, int delay_low)
+{
+   Serial.print(message);
+   delay(delay_print);
+   digitalWrite(pin, LOW);
+   delay(delay_low);
+}
+
+//FUNCION TIMBRE ENCENDIDO
+void timbreEncendido(int message, int pin, int tiempo)
+{
+   digitalWrite(pin, HIGH);
+   Serial.print(message);
+   Serial.print(tiempo / 1000);
+   Serial.print("s: ");
+}
+
+//FUNCION TIEMBRE ENTRE HORAS DE CLASE
+void timbreEntreHoras(int pin, int tiempo)
+{
+   digitalWrite(pin, LOW);
+   Serial.print("Ha transcurrido: ");
+   Serial.print(tiempo / 1000);
+   Serial.print("s: ");
+   Serial.println("Led desactiva");
+   delay(1000);
+}
+
+//CICLO DE TIEMBRE NORMAL
+
+void timbreNormal(int message, int pin, int tiempo_hora, int delay_print, int delay_low)
+{
+   Serial.println(tiempo_hora);
+   Serial.print(message);
+   int tiempo = millis();
+
+   if (millis() > tiempo_hora)
+   {
+      timbreEncendido("Ha transcurrido: ", pin, tiempo);
+      //NOTA: Revisar logica este apagado deberia ser por menos tiempo
+      timbreApagado("Led activa", pin, delay_print, delay_low);
+   }
+   else
+   {
+      timbreEntreHoras(pin, tiempo);
+   }
+}
+
+//TIEMPO SALIR
+void timpoSalida(int message, int pin, int tiempo_hora, int delay_print, int delay_low, int contador_dia)
+{
+   //NOTA: REVISAR BIEN ESTA LOGICA DE TIEMPO DE SALIDA
+   Serial.println(tiempo_hora);
+   Serial.print(message);
+   int tiempo = millis();
+   if (millis() > tiempo_hora)
+   {
+
+      digitalWrite(pin, HIGH);
+      delay(delay_print); // cada cuanto me va a prender el tiembre
+      Serial.print("Ha transcurrido: ");
+      Serial.print(tiempo / 1000);
+      Serial.print("s: ");
+      Serial.println("Led desactiva");
+      delay(1000);
+      digitalWrite(pin, LOW);
+      delay(delay_low); // lo de durara apagado luego de concluir el dia
+
+      //NOTA: NO ENTIENDO PORQUE VOLVER A PREGUNTAR ESTO DENTRO DE ESTE IF
+      Serial.print("IMPRIME EL DIA FINALIZADO DE 0 A 365: ");
+      Serial.print(contador_dia);
+
+      // hara que mi contador_dia aumente en uno cuando termine el dia
+   }
+}
+
+//FUNCION LOOP PARTE PRINCIPAL DEL CODIGO.
 
 void loop()
 {
    time_t t = now();
    printTime(t);
 
-   for (int i = 0; i < dias_apagado_array_length; i++)
+   //NOTA: Cambie la logica del for.
+   /*
+      Uso la variable DIAS_YEAR para los 365 dias del año.
+      El contador i lleva los dias que van pasando.
+      (i hace la misma funcion de contador dias)
+
+      Estudiar arreglos distinguir que es un indice y que es el valor
+   */
+
+   // el array dias apagados tiene 4 dias, y sus indices van de 0-3
+   // el -1 es para no sobre pasar el indice
+   // este contador se reinica con cada finalizacion del ciclo
+   // a los 365 dias cumplidos
+
+   int dias_apagados_count = dias_apagado_array_length - 1;
+
+   for (int i = 0; i < DIAS_YEAR; i++)
    {
 
-      if (contador_dia == dias_apagado[i])
+      // cada vez que se cumpla la condicion se reduce el indice
+      // dias_apagados_count es un indice
+      // para dias apagados por esto el sentido inverso
+
+      if (dias_apagados_count >= 0 && i == dias_apagado[i])
       {
-         Serial.print("timbre apagado: ");
-         delay(1000);
-         digitalWrite(3, LOW);
-         delay(25000);
+         //NOTA: deberia apagar por todo el dia! revisar logica
+         timbreApagado("Timbre apagado:", timbre, DELAY_PRINT, DELAY_LOW);
+         --dias_apagados_count;
       }
       else
       {
 
-         // ciclo del timbre
-         Serial.println(tiempo_1ra_hora);
-         Serial.print("1ra hora : ");
-         tiempo = millis();
-         if (millis() > tiempo_1ra_hora)
-         {
+         /*** CICLO TIMBRE NORMAL ****/
 
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); // tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(25000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
-         Serial.println(tiempo_2da_hora);
-         Serial.println("2da hora: ");
-         tiempo = millis();
-         if (millis() > tiempo_2da_hora)
-         {
+         //TIMBRE PRIMERA HORA
+         timbreNormal("1ra hora : ", timbre, tiempo_1ra_hora, DELAY_PRINT, DELAY_LOW);
 
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(25000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
+         //TIMBRE SEGUNDA HORA
+         timbreNormal("2da hora : ", timbre, tiempo_2da_hora, DELAY_PRINT, DELAY_LOW);
 
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
+         //TIMBRE TERCERA HORA
+         timbreNormal("3ra hora : ", timbre, tiempo_3ra_hora, DELAY_PRINT, DELAY_LOW);
 
-         Serial.println(tiempo_era_hora);
-         Serial.print("3era hora : ");
-         tiempo = millis();
-         if (millis() > tiempo_era_hora)
-         {
+         //RECREO 1
+         timbreNormal("Recreo 1:  ", timbre, recreo_1, DELAY_PRINT, DELAY_LOW_RECREO1);
 
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(25000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
+         //TIMBRE CUARTA HORA
+         timbreNormal("4ra hora : ", timbre, tiempo_4ta_hora, DELAY_PRINT, DELAY_LOW);
 
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
+         //TIMBRE QUINTA HORA
+         timbreNormal("5ta hora : ", timbre, tiempo_5ta_hora, DELAY_PRINT, DELAY_LOW);
 
-         Serial.println(recreo_1);
-         Serial.println("recreo1: ");
-         tiempo = millis();
-         if (millis() > recreo_1)
-         {
+         //TIMBRE SEXTA HORA
+         timbreNormal("6ta hora : ", timbre, tiempo_6ta_hora, DELAY_PRINT, DELAY_LOW_SEXTA_HORA);
 
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(15000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
+         //TIMBRE RECREO 2
+         timbreNormal("Recreo 2 : ", timbre, recreo_2, DELAY_PRINT, DELAY_LOW_RECREO2);
 
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
+         //TIMBRE SEPTIMA HORA
+         timbreNormal("7ma hora : ", timbre, tiempo_7ma_hora, DELAY_PRINT, DELAY_LOW);
 
-         Serial.println(tiempo_4ta_hora);
-         Serial.println("4ta hora: ");
-         tiempo = millis();
-         if (millis() > tiempo_4ta_hora)
-         {
+         //TIMBRE OCTAVA HORA
+         timbreNormal("8va hora : ", timbre, tiempo_8va_hora, DELAY_PRINT, DELAY_LOW);
 
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(25000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
+         // TIEMPO SALIDA, i LLEVA EL CONTEO DE LOS DIAS Y
+         //SE INCREMENTA EN EL FOR
 
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
+         tiempoSalida("Tiempo Salida : ", timbre, tiempo_salir, DELAY_PRINT, DELAY_LOW, i);
 
-         Serial.println(tiempo_5ta_hora);
-         Serial.println("5ta hora: ");
-         tiempo = millis();
-         if (millis() > tiempo_5ta_hora)
-         {
+      } //FINALIZO EL IF - ELSE
 
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(25000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
-
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
-
-         Serial.println(tiempo_6ta_hora);
-         Serial.println("6ta hora: ");
-         tiempo = millis();
-         if (millis() > tiempo_6ta_hora)
-         {
-
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(20000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
-
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
-         Serial.println(recreo2);
-         Serial.println("recreo 2: ");
-         tiempo = millis();
-         if (millis() > recreo2)
-         {
-
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(35000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
-
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
-
-         Serial.println(tiempo_7ma_hora);
-         Serial.println("7ma hora: ");
-         tiempo = millis();
-         if (millis() > tiempo_7ma_hora)
-         {
-
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(25000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
-
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
-
-         Serial.println(tiempo_8va_hora);
-         Serial.println("8va hora: ");
-         tiempo = millis();
-         if (millis() > tiempo_8va_hora)
-         {
-
-            digitalWrite(3, HIGH);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led activa");
-            delay(5000); //tiempo que durara encendido
-            digitalWrite(3, LOW);
-            delay(25000); // cada cuanto me va a prender el tiembre
-         }
-         else
-         {
-
-            digitalWrite(3, LOW);
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-         }
-
-         Serial.println(tiempo_salir);
-         Serial.println("tiempo salir: ");
-         tiempo = millis();
-         if (millis() > tiempo_salir)
-         {
-
-            digitalWrite(3, HIGH);
-            delay(5000); // cada cuanto me va a prender el tiembre
-            Serial.print("Ha transcurrido: ");
-            Serial.print(tiempo / 1000);
-            Serial.print("s: ");
-            Serial.println("Led desactiva");
-            delay(1000);
-            digitalWrite(3, LOW);
-            delay(25000); // lo de durara apagado luego de concluir el dia
-            if (millis() > tiempo_salir)
-            {
-               contador_dia++;
-               Serial.print(contador_dia++);
-            }
-            // hara que mi contador_dia aumente en uno cuando termine el dia
-         }
-      }
-   }
+   } //FINALIZO EL FOR POR DIAS
 }
